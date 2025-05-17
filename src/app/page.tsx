@@ -8,6 +8,24 @@ interface Habit {
   progress: number;
 }
 
+// Theme color options
+const themeColors = [
+  { name: "green", variable: "--color-tgreen" },
+  { name: "blue", variable: "--color-tblue" },
+  { name: "yellow", variable: "--color-tyellow" },
+  { name: "red", variable: "--color-tred" },
+  { name: "pink", variable: "--color-tpink" },
+  { name: "purple", variable: "--color-tpurple" },
+];
+
+// Function to update the primary color based on theme selection
+const updatePrimaryColor = (index: number) => {
+  const themeColor = getComputedStyle(
+    document.documentElement,
+  ).getPropertyValue(themeColors[index].variable);
+  document.documentElement.style.setProperty("--color-primary", themeColor);
+};
+
 export default function HomePage() {
   const [habits, setHabits] = useState<Habit[]>([]);
   const [newHabit, setNewHabit] = useState("");
@@ -19,6 +37,7 @@ export default function HomePage() {
   const [welcomeText, setWelcomeText] = useState("");
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [systemUptime, setSystemUptime] = useState(0);
+  const [activeThemeIndex, setActiveThemeIndex] = useState(0);
   const commandInputRef = useRef<HTMLInputElement>(null);
   const newHabitInputRef = useRef<HTMLInputElement>(null);
 
@@ -30,6 +49,13 @@ export default function HomePage() {
       { id: "3", name: "Exercise", progress: 30 },
     ];
     setHabits(initialHabits);
+
+    // Load theme from localStorage
+    const savedThemeIndex = localStorage.getItem("habitThemeIndex");
+    if (savedThemeIndex !== null) {
+      setActiveThemeIndex(parseInt(savedThemeIndex, 10));
+      updatePrimaryColor(parseInt(savedThemeIndex, 10));
+    }
 
     // Calculate initial overall progress
     calculateOverallProgress(initialHabits);
@@ -78,6 +104,16 @@ export default function HomePage() {
       if (e.ctrlKey && e.key === "k") {
         e.preventDefault();
         setShowCommandHelp(true);
+      }
+      // Alt+T to cycle through themes
+      if (e.altKey && e.key === "t") {
+        e.preventDefault();
+        setActiveThemeIndex((prevIndex) => {
+          const nextIndex = (prevIndex + 1) % themeColors.length;
+          updatePrimaryColor(nextIndex);
+          localStorage.setItem("habitThemeIndex", nextIndex.toString());
+          return nextIndex;
+        });
       }
       // Escape to close help panel
       if (e.key === "Escape" && showCommandHelp) {
@@ -281,89 +317,93 @@ export default function HomePage() {
   };
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center bg-[#111111] p-5 font-mono text-[#32dfa0]">
+    <main className="text-primary flex min-h-screen flex-col items-center justify-center bg-[#111111] p-5 font-mono">
       <div className="w-full max-w-md">
         {/* Typewriter Welcome Text */}
-        <div className="mb-4 h-4 font-mono text-xs text-[#32dfa0]/80">
+        <div className="text-primary/80 mb-4 h-4 font-mono text-xs">
           {welcomeText}
         </div>
 
         {/* Help Modal Popup */}
         {showCommandHelp && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75">
-            <div className="relative w-[90%] max-w-md border-2 border-[#32dfa0]/40 bg-[#0a0a0a] p-5">
+            <div className="border-primary/40 relative w-[90%] max-w-md border-2 bg-[#0a0a0a] p-5">
               <button
                 onClick={() => setShowCommandHelp(false)}
-                className="absolute top-2 right-2 text-lg text-[#32dfa0]/80 hover:text-[#32dfa0]"
+                className="text-primary/80 hover:text-primary absolute top-2 right-2 text-lg"
               >
                 ×
               </button>
 
-              <h2 className="mb-4 border-b border-[#32dfa0]/20 pb-2 text-lg font-bold text-[#32dfa0]">
+              <h2 className="border-primary/20 text-primary mb-4 border-b pb-2 text-lg font-bold">
                 Command Reference
               </h2>
 
               <div className="mb-4">
-                <div className="mb-2 font-bold text-[#32dfa0]/90">
+                <div className="text-primary/90 mb-2 font-bold">
                   Available Commands:
                 </div>
                 <div className="grid grid-cols-2 gap-x-3 gap-y-2 text-sm">
                   <div>
-                    <span className="font-bold text-[#32dfa0]">/add</span>{" "}
+                    <span className="text-primary font-bold">/add</span>{" "}
                     habit_name
                   </div>
                   <div>Add a new habit</div>
                   <div>
-                    <span className="font-bold text-[#32dfa0]">/rm</span>{" "}
+                    <span className="text-primary font-bold">/rm</span>{" "}
                     habit_name
                   </div>
                   <div>Remove a habit</div>
                   <div>
-                    <span className="font-bold text-[#32dfa0]">/p</span>{" "}
+                    <span className="text-primary font-bold">/p</span>{" "}
                     habit_name value
                   </div>
                   <div>Set progress value (0-100)</div>
                   <div>
-                    <span className="font-bold text-[#32dfa0]">/export</span>
+                    <span className="text-primary font-bold">/export</span>
                   </div>
                   <div>Export habits to JSON</div>
                   <div>
-                    <span className="font-bold text-[#32dfa0]">/clear</span>
+                    <span className="text-primary font-bold">/clear</span>
                   </div>
                   <div>Clear command history</div>
                   <div>
-                    <span className="font-bold text-[#32dfa0]">/stats</span>
+                    <span className="text-primary font-bold">/stats</span>
                   </div>
                   <div>Show habit statistics</div>
                 </div>
               </div>
 
-              <div className="mt-4 border-t border-[#32dfa0]/20 pt-4">
-                <div className="mb-2 font-bold text-[#32dfa0]/90">
+              <div className="border-primary/20 mt-4 border-t pt-4">
+                <div className="text-primary/90 mb-2 font-bold">
                   Keyboard Shortcuts:
                 </div>
                 <div className="grid grid-cols-2 gap-x-3 gap-y-2 text-sm">
                   <div>
-                    <span className="font-bold text-[#32dfa0]">Alt+N</span>
+                    <span className="text-primary font-bold">Alt+N</span>
                   </div>
                   <div>Focus new habit input</div>
                   <div>
-                    <span className="font-bold text-[#32dfa0]">Alt+C</span>
+                    <span className="text-primary font-bold">Alt+C</span>
                   </div>
                   <div>Focus command input</div>
                   <div>
-                    <span className="font-bold text-[#32dfa0]">Ctrl+K</span>
+                    <span className="text-primary font-bold">Ctrl+K</span>
                   </div>
                   <div>Show command help</div>
                   <div>
-                    <span className="font-bold text-[#32dfa0]">Esc</span>
+                    <span className="text-primary font-bold">Alt+T</span>
+                  </div>
+                  <div>Cycle through themes</div>
+                  <div>
+                    <span className="text-primary font-bold">Esc</span>
                   </div>
                   <div>Close help panel</div>
                 </div>
               </div>
 
-              <div className="mt-6 text-center text-xs text-[#32dfa0]/50">
-                Press <span className="text-[#32dfa0]">Esc</span> to close
+              <div className="text-primary/50 mt-6 text-center text-xs">
+                Press <span className="text-primary">Esc</span> to close
               </div>
             </div>
           </div>
@@ -373,19 +413,19 @@ export default function HomePage() {
         <div className="mb-8">
           <div className="mb-2 flex items-center justify-between">
             <h1 className="text-xl font-bold tracking-widest">HABIT.SYS</h1>
-            <code className="border border-[#32dfa0]/20 px-2 py-1 font-mono text-xs">
+            <code className="border-primary/20 border px-2 py-1 font-mono text-xs">
               {overallProgress}%
             </code>
           </div>
 
           {/* Overall Progress Bar */}
-          <div className="h-1.5 w-full border border-[#32dfa0]/30 bg-[#111111]">
+          <div className="border-primary/30 h-1.5 w-full border bg-[#111111]">
             <div
-              className="h-full bg-[#32dfa0] transition-all duration-300"
+              className="bg-primary h-full transition-all duration-300"
               style={{ width: `${overallProgress}%` }}
             />
           </div>
-          <div className="mt-1 text-right text-xs text-[#32dfa0]/50">
+          <div className="text-primary/50 mt-1 text-right text-xs">
             _progress
           </div>
         </div>
@@ -395,13 +435,13 @@ export default function HomePage() {
           {habits.map((habit) => (
             <div
               key={habit.id}
-              className="flex items-center justify-between border border-[#32dfa0]/20 px-3 py-2"
+              className="border-primary/20 flex items-center justify-between border px-3 py-2"
             >
               <span className="font-mono text-sm">{habit.name}</span>
               <div className="flex space-x-3 text-xs">
                 <button
                   onClick={() => updateProgress(habit.id, false)}
-                  className="flex h-5 w-5 items-center justify-center border border-[#32dfa0]/20 hover:bg-[#32dfa0]/10"
+                  className="border-primary/20 hover:bg-primary/10 flex h-5 w-5 items-center justify-center border"
                 >
                   -
                 </button>
@@ -410,13 +450,13 @@ export default function HomePage() {
                 </code>
                 <button
                   onClick={() => updateProgress(habit.id, true)}
-                  className="flex h-5 w-5 items-center justify-center border border-[#32dfa0]/20 hover:bg-[#32dfa0]/10"
+                  className="border-primary/20 hover:bg-primary/10 flex h-5 w-5 items-center justify-center border"
                 >
                   +
                 </button>
                 <button
                   onClick={() => deleteHabit(habit.id)}
-                  className="flex h-5 w-5 items-center justify-center border border-[#32dfa0]/20 hover:border-red-500 hover:text-red-500"
+                  className="border-primary/20 flex h-5 w-5 items-center justify-center border hover:border-red-500 hover:text-red-500"
                 >
                   ×
                 </button>
@@ -426,7 +466,7 @@ export default function HomePage() {
         </div>
 
         {/* Add New Habit */}
-        <div className="mb-6 flex border border-[#32dfa0]/20">
+        <div className="border-primary/20 mb-6 flex border">
           <input
             id="new-habit-input"
             ref={newHabitInputRef}
@@ -435,22 +475,22 @@ export default function HomePage() {
             onChange={(e) => setNewHabit(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && addHabit()}
             placeholder="_new_habit"
-            className="flex-1 bg-transparent px-3 py-2 font-mono text-sm text-[#32dfa0] placeholder:text-[#32dfa0]/30 focus:outline-none"
+            className="text-primary placeholder:text-primary/30 flex-1 bg-transparent px-3 py-2 font-mono text-sm focus:outline-none"
           />
           <button
             onClick={() => addHabit()}
-            className="border-l border-[#32dfa0]/20 px-4 text-sm hover:bg-[#32dfa0]/10"
+            className="border-primary/20 hover:bg-primary/10 border-l px-4 text-sm"
           >
             +
           </button>
         </div>
 
         {/* Command Terminal */}
-        <div className="mb-6 border border-[#32dfa0]/20 bg-[#0a0a0a]">
+        <div className="border-primary/20 mb-6 border bg-[#0a0a0a]">
           {/* Command History */}
-          <div className="h-20 overflow-y-auto border-b border-[#32dfa0]/20 p-2 text-xs text-[#32dfa0]/70">
+          <div className="border-primary/20 text-primary/70 h-20 overflow-y-auto border-b p-2 text-xs">
             {commandHistory.length === 0 ? (
-              <div className="text-[#32dfa0]/50">
+              <div className="text-primary/50">
                 Press Ctrl+K for help with available commands
               </div>
             ) : (
@@ -468,14 +508,14 @@ export default function HomePage() {
 
           {/* Command Input */}
           <form onSubmit={handleCommandSubmit} className="relative flex">
-            <span className="flex items-center pl-2 text-[#32dfa0]/60">
+            <span className="text-primary/60 flex items-center pl-2">
               root@habits:~$
             </span>
             <input
               id="command-input"
               ref={commandInputRef}
               placeholder="type command or press Ctrl+K for help"
-              className="flex-1 bg-transparent px-2 py-2 pl-2 font-mono text-sm text-[#32dfa0] placeholder:text-[#32dfa0]/30 focus:outline-none"
+              className="text-primary placeholder:text-primary/30 flex-1 bg-transparent px-2 py-2 pl-2 font-mono text-sm focus:outline-none"
               value={command}
               onChange={(e) => setCommand(e.target.value)}
               autoComplete="off"
@@ -483,11 +523,11 @@ export default function HomePage() {
 
             {/* Command suggestions */}
             {suggestions.length > 0 && (
-              <div className="absolute bottom-full left-0 z-10 w-full border border-[#32dfa0]/20 bg-[#0a0a0a]">
+              <div className="border-primary/20 absolute bottom-full left-0 z-10 w-full border bg-[#0a0a0a]">
                 {suggestions.map((suggestion, i) => (
                   <div
                     key={i}
-                    className="cursor-pointer px-2 py-1 text-xs hover:bg-[#32dfa0]/10"
+                    className="hover:bg-primary/10 cursor-pointer px-2 py-1 text-xs"
                     onClick={() => setCommand(suggestion)}
                   >
                     {suggestion}
@@ -497,21 +537,53 @@ export default function HomePage() {
             )}
 
             {/* Cursor animation */}
-            <span className="absolute top-1/2 right-2 h-4 w-1.5 -translate-y-1/2 transform animate-pulse bg-[#32dfa0]/80"></span>
+            <span className="bg-primary/80 absolute top-1/2 right-2 h-4 w-1.5 -translate-y-1/2 transform animate-pulse"></span>
           </form>
         </div>
 
         {/* Status and Date Display */}
         <div className="flex flex-col gap-1">
           {/* System Stats Line */}
-          <div className="flex justify-between border-t border-[#32dfa0]/20 pt-2 text-xs text-[#32dfa0]/50">
+          <div className="border-primary/20 text-primary/50 flex justify-between border-t pt-2 text-xs">
             <span>sys.uptime: {systemUptime}s</span>
             <span>mem: {habits.length * 128}kb</span>
             <span>v1.0.3</span>
           </div>
 
+          {/* Theme Color Selector */}
+          <div className="border-primary/20 mt-2 mb-1 border-t pt-2">
+            <div className="flex items-center justify-between">
+              <span className="text-primary/50 text-xs">theme.color:</span>
+              <div className="flex gap-2">
+                {themeColors.map((color, index) => (
+                  <button
+                    key={color.name}
+                    onClick={() => {
+                      setActiveThemeIndex(index);
+                      updatePrimaryColor(index);
+                      localStorage.setItem("habitThemeIndex", index.toString());
+                    }}
+                    className={`flex h-6 w-6 items-center justify-center border transition-all ${
+                      activeThemeIndex === index
+                        ? "border-primary/80"
+                        : "border-primary/20 hover:border-primary/40"
+                    }`}
+                    title={`${color.name} (Alt+T to cycle)`}
+                  >
+                    <div
+                      className="h-4 w-4"
+                      style={{
+                        backgroundColor: `var(${color.variable})`,
+                      }}
+                    />
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+
           {/* Date Display */}
-          <div className="flex justify-between font-mono text-xs tracking-wide text-[#32dfa0]/40">
+          <div className="text-primary/40 flex justify-between font-mono text-xs tracking-wide">
             <span>sys.{currentDate}</span>
             <span>{habits.length} tasks_active</span>
           </div>
