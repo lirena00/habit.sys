@@ -74,6 +74,11 @@ export default function HomePage() {
         e.preventDefault();
         commandInputRef.current?.focus();
       }
+      // Ctrl+K to show command help
+      if (e.ctrlKey && e.key === "k") {
+        e.preventDefault();
+        setShowCommandHelp(true);
+      }
       // Escape to close help panel
       if (e.key === "Escape" && showCommandHelp) {
         setShowCommandHelp(false);
@@ -98,9 +103,6 @@ export default function HomePage() {
         "/remove",
         "/p",
         "/progress",
-        "/help",
-        "/?",
-        "/close",
         "/export",
         "/clear",
         "/stats",
@@ -196,18 +198,6 @@ export default function HomePage() {
     const parts = cmd.split(" ");
     const commandType = parts[0]?.toLowerCase() ?? "";
 
-    // Help command
-    if (commandType === "/help" || commandType === "/?") {
-      setShowCommandHelp(true);
-      return true;
-    }
-
-    // Close help
-    if (commandType === "/close") {
-      setShowCommandHelp(false);
-      return true;
-    }
-
     // Add habit command: /add habitName
     if (commandType === "/add" && parts.length > 1) {
       const habitName = parts.slice(1).join(" ");
@@ -298,6 +288,87 @@ export default function HomePage() {
           {welcomeText}
         </div>
 
+        {/* Help Modal Popup */}
+        {showCommandHelp && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75">
+            <div className="relative w-[90%] max-w-md border-2 border-[#32dfa0]/40 bg-[#0a0a0a] p-5">
+              <button
+                onClick={() => setShowCommandHelp(false)}
+                className="absolute top-2 right-2 text-lg text-[#32dfa0]/80 hover:text-[#32dfa0]"
+              >
+                ×
+              </button>
+
+              <h2 className="mb-4 border-b border-[#32dfa0]/20 pb-2 text-lg font-bold text-[#32dfa0]">
+                Command Reference
+              </h2>
+
+              <div className="mb-4">
+                <div className="mb-2 font-bold text-[#32dfa0]/90">
+                  Available Commands:
+                </div>
+                <div className="grid grid-cols-2 gap-x-3 gap-y-2 text-sm">
+                  <div>
+                    <span className="font-bold text-[#32dfa0]">/add</span>{" "}
+                    habit_name
+                  </div>
+                  <div>Add a new habit</div>
+                  <div>
+                    <span className="font-bold text-[#32dfa0]">/rm</span>{" "}
+                    habit_name
+                  </div>
+                  <div>Remove a habit</div>
+                  <div>
+                    <span className="font-bold text-[#32dfa0]">/p</span>{" "}
+                    habit_name value
+                  </div>
+                  <div>Set progress value (0-100)</div>
+                  <div>
+                    <span className="font-bold text-[#32dfa0]">/export</span>
+                  </div>
+                  <div>Export habits to JSON</div>
+                  <div>
+                    <span className="font-bold text-[#32dfa0]">/clear</span>
+                  </div>
+                  <div>Clear command history</div>
+                  <div>
+                    <span className="font-bold text-[#32dfa0]">/stats</span>
+                  </div>
+                  <div>Show habit statistics</div>
+                </div>
+              </div>
+
+              <div className="mt-4 border-t border-[#32dfa0]/20 pt-4">
+                <div className="mb-2 font-bold text-[#32dfa0]/90">
+                  Keyboard Shortcuts:
+                </div>
+                <div className="grid grid-cols-2 gap-x-3 gap-y-2 text-sm">
+                  <div>
+                    <span className="font-bold text-[#32dfa0]">Alt+N</span>
+                  </div>
+                  <div>Focus new habit input</div>
+                  <div>
+                    <span className="font-bold text-[#32dfa0]">Alt+C</span>
+                  </div>
+                  <div>Focus command input</div>
+                  <div>
+                    <span className="font-bold text-[#32dfa0]">Ctrl+K</span>
+                  </div>
+                  <div>Show command help</div>
+                  <div>
+                    <span className="font-bold text-[#32dfa0]">Esc</span>
+                  </div>
+                  <div>Close help panel</div>
+                </div>
+              </div>
+
+              <div className="mt-6 text-center text-xs text-[#32dfa0]/50">
+                Press <span className="text-[#32dfa0]">Esc</span> to close
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Header and Overall Progress */}
         <div className="mb-8">
           <div className="mb-2 flex items-center justify-between">
@@ -380,7 +451,7 @@ export default function HomePage() {
           <div className="h-20 overflow-y-auto border-b border-[#32dfa0]/20 p-2 text-xs text-[#32dfa0]/70">
             {commandHistory.length === 0 ? (
               <div className="text-[#32dfa0]/50">
-                Type /help for available commands
+                Press Ctrl+K for help with available commands
               </div>
             ) : (
               commandHistory.map((cmd, i) => (
@@ -395,70 +466,6 @@ export default function HomePage() {
             )}
           </div>
 
-          {/* Command Help Panel */}
-          {showCommandHelp && (
-            <div className="border-b border-[#32dfa0]/20 bg-[#0c0c0c] p-2 text-xs">
-              <div className="mb-1 font-bold text-[#32dfa0]/90">
-                Available Commands:
-              </div>
-              <div className="grid grid-cols-2 gap-x-2 gap-y-1">
-                <div>
-                  <span className="text-[#32dfa0]">/add</span> habit_name
-                </div>
-                <div>Add a new habit</div>
-                <div>
-                  <span className="text-[#32dfa0]">/rm</span> habit_name
-                </div>
-                <div>Remove a habit</div>
-                <div>
-                  <span className="text-[#32dfa0]">/p</span> habit_name value
-                </div>
-                <div>Set progress value (0-100)</div>
-                <div>
-                  <span className="text-[#32dfa0]">/help</span> or{" "}
-                  <span className="text-[#32dfa0]">/?</span>
-                </div>
-                <div>Show this help</div>
-                <div>
-                  <span className="text-[#32dfa0]">/close</span>
-                </div>
-                <div>Close help panel</div>
-                <div>
-                  <span className="text-[#32dfa0]">/export</span>
-                </div>
-                <div>Export habits to JSON</div>
-                <div>
-                  <span className="text-[#32dfa0]">/clear</span>
-                </div>
-                <div>Clear command history</div>
-                <div>
-                  <span className="text-[#32dfa0]">/stats</span>
-                </div>
-                <div>Show habit statistics</div>
-              </div>
-
-              <div className="mt-2 border-t border-[#32dfa0]/20 pt-2">
-                <div className="mb-1 font-bold text-[#32dfa0]/90">
-                  Keyboard Shortcuts:
-                </div>
-                <div className="grid grid-cols-2 gap-x-2 gap-y-1">
-                  <div>
-                    <span className="text-[#32dfa0]">Alt+N</span>
-                  </div>
-                  <div>Focus new habit input</div>
-                  <div>
-                    <span className="text-[#32dfa0]">Alt+C</span>
-                  </div>
-                  <div>Focus command input</div>
-                  <div>
-                    <span className="text-[#32dfa0]">Esc</span>
-                  </div>
-                  <div>Close help panel</div>
-                </div>
-              </div>
-            </div>
-          )}
-
           {/* Command Input */}
           <form onSubmit={handleCommandSubmit} className="relative flex">
             <span className="flex items-center pl-2 text-[#32dfa0]/60">
@@ -467,11 +474,10 @@ export default function HomePage() {
             <input
               id="command-input"
               ref={commandInputRef}
-              type="text"
+              placeholder="type command or press Ctrl+K for help"
+              className="flex-1 bg-transparent px-2 py-2 pl-2 font-mono text-sm text-[#32dfa0] placeholder:text-[#32dfa0]/30 focus:outline-none"
               value={command}
               onChange={(e) => setCommand(e.target.value)}
-              placeholder="type /help for commands"
-              className="flex-1 bg-transparent px-2 py-2 pl-2 font-mono text-sm text-[#32dfa0] placeholder:text-[#32dfa0]/30 focus:outline-none"
               autoComplete="off"
             />
 
