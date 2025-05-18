@@ -26,9 +26,11 @@ const themeColors = [
 ];
 
 const updatePrimaryColor = (index: number) => {
+  const variable = themeColors[index]?.variable ?? "--color-primary";
   const themeColor = getComputedStyle(
     document.documentElement,
-  ).getPropertyValue(themeColors[index].variable);
+  ).getPropertyValue(variable);
+
   document.documentElement.style.setProperty("--color-primary", themeColor);
 };
 

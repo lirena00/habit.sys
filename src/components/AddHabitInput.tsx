@@ -4,7 +4,7 @@ interface AddHabitInputProps {
   newHabit: string;
   setNewHabit: (val: string) => void;
   addHabit: () => void;
-  newHabitInputRef: RefObject<HTMLInputElement>;
+  newHabitInputRef: RefObject<HTMLInputElement | null>;
 }
 
 export const AddHabitInput: React.FC<AddHabitInputProps> = ({

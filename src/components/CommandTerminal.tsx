@@ -4,10 +4,10 @@ interface CommandTerminalProps {
   command: string;
   setCommand: (val: string) => void;
   handleCommandSubmit: (e: React.FormEvent) => void;
-  commandInputRef: RefObject<HTMLInputElement>;
+  commandInputRef: RefObject<HTMLInputElement | null>;
   commandHistory: string[];
   suggestions: string[];
-  setCommandFromSuggestion: (cmd: string | undefined) => void;
+  setCommandFromSuggestion: (cmd: string) => void;
 }
 
 export const CommandTerminal: React.FC<CommandTerminalProps> = ({
@@ -43,13 +43,13 @@ export const CommandTerminal: React.FC<CommandTerminalProps> = ({
         // If there's only one suggestion, select it automatically
         if (suggestions.length === 1) {
           e.preventDefault();
-          setCommandFromSuggestion(suggestions[0]);
+          setCommandFromSuggestion(suggestions[0] ?? "");
           return;
         }
         // Otherwise, use the selected suggestion if one is selected
         if (selectedSuggestionIndex >= 0) {
           e.preventDefault();
-          setCommandFromSuggestion(suggestions[selectedSuggestionIndex]);
+          setCommandFromSuggestion(suggestions[selectedSuggestionIndex] ?? "");
           setSelectedSuggestionIndex(-1);
         }
       }
