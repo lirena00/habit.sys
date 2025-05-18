@@ -8,6 +8,7 @@ import { HelpModal } from "@/components/HelpModal";
 import { ThemeSelector } from "@/components/ThemeSelector";
 import { HeaderProgress } from "@/components/HeaderProgress";
 import { StatusBar } from "@/components/StatusBar";
+import { motion, AnimatePresence } from "motion/react";
 import { WelcomeText } from "@/components/WelcomeText";
 
 interface Habit {
@@ -190,17 +191,35 @@ export default function HomePage() {
   };
 
   // Update add habit function to use daysCompleted
+  // Enhance the addHabit function
   const addHabit = (habitName: string = newHabit) => {
     if (habitName.trim() === "") return;
+
     const habit: Habit = {
       id: Date.now().toString(),
       name: habitName,
       daysCompleted: 0,
     };
+
     const updatedHabits = [...habits, habit];
     setHabits(updatedHabits);
     calculateOverallProgress(updatedHabits);
     setNewHabit("");
+
+    // Add feedback message to command history
+    setCommandHistory((prev) => [
+      ...prev.slice(-4),
+      `Added new habit: "${habitName}"`,
+    ]);
+
+    // Flash the new habit
+    setTimeout(() => {
+      const element = document.getElementById(`habit-${habit.id}`);
+      if (element) {
+        element.classList.add("bg-primary/10");
+        setTimeout(() => element.classList.remove("bg-primary/10"), 500);
+      }
+    }, 100);
   };
 
   // Update progress function to increment/decrement days instead of percentage
@@ -331,13 +350,27 @@ export default function HomePage() {
   };
 
   return (
-    <main className="text-primary flex min-h-screen flex-col items-center justify-center bg-[#111111] p-5 font-mono">
-      <div className="w-full max-w-md">
+    <motion.main
+      className="text-primary flex min-h-screen flex-col items-center justify-center bg-[#111111] p-5 font-mono"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.5 }}
+    >
+      <motion.div
+        className="w-full max-w-md"
+        initial={{ y: 20 }}
+        animate={{ y: 0 }}
+        transition={{ duration: 0.4, delay: 0.1 }}
+      >
         <WelcomeText text={welcomeText} />
-        <HelpModal
-          show={showCommandHelp}
-          onClose={() => setShowCommandHelp(false)}
-        />
+        <AnimatePresence>
+          {showCommandHelp && (
+            <HelpModal
+              show={showCommandHelp}
+              onClose={() => setShowCommandHelp(false)}
+            />
+          )}
+        </AnimatePresence>
         <HeaderProgress overallProgress={overallProgress} />
         <HabitList
           habits={habits}
@@ -371,7 +404,7 @@ export default function HomePage() {
           setActiveThemeIndex={setActiveThemeIndex}
           updatePrimaryColor={updatePrimaryColor}
         />
-      </div>
-    </main>
+      </motion.div>
+    </motion.main>
   );
 }

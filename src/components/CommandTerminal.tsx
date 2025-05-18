@@ -78,15 +78,15 @@ export const CommandTerminal: React.FC<CommandTerminalProps> = ({
       </div>
 
       {/* Command Input */}
-      <form onSubmit={handleCommandSubmit} className="relative flex">
-        <span className="text-primary/60 flex items-center pl-2">
+      <form onSubmit={handleCommandSubmit} className="group relative flex">
+        <span className="text-primary/30 group-focus-within:text-primary/90 flex items-center pl-2 transition-colors">
           root@habits:~$
         </span>
         <input
           id="command-input"
           ref={commandInputRef}
           placeholder="type command or press Ctrl+K for help"
-          className="text-primary placeholder:text-primary/30 flex-1 bg-transparent px-2 py-2 pl-2 font-mono text-sm focus:outline-none"
+          className="text-primary placeholder:text-primary/30 group-hover:bg-primary/5 flex-1 bg-transparent px-2 py-2 pl-2 font-mono text-sm transition-colors focus:outline-none"
           value={command}
           onChange={(e) => setCommand(e.target.value)}
           onKeyDown={handleKeyDown}

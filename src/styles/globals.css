@@ -9,3 +9,34 @@
   --color-tpink: #f472b6;
   --color-tpurple: #a78bfa;
 }
+
+/* Add to your globals.css file */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(-10px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.habit-item {
+  animation: fadeIn 0.3s ease-out;
+}
+
+.command-history-item {
+  animation: slideIn 0.2s ease-out;
+}
