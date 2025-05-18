@@ -11,6 +11,8 @@ export const metadata: Metadata = {
 
 const jetbrain_mono = JetBrains_Mono({
   variable: "--font-mono-sans",
+  subsets: ["latin"],
+  display: "swap",
 });
 
 export default function RootLayout({
