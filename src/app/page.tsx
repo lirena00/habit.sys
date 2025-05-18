@@ -49,13 +49,32 @@ export default function HomePage() {
   const commandInputRef = useRef<HTMLInputElement>(null);
   const newHabitInputRef = useRef<HTMLInputElement>(null);
 
-  // Initialization (only once)
   useEffect(() => {
-    const initialHabits = [
-      { id: "1", name: "Meditate", daysCompleted: 14 },
-      { id: "2", name: "Read a book", daysCompleted: 9 },
-      { id: "3", name: "Exercise", daysCompleted: 6 },
-    ];
+    // Try to load habits from localStorage first
+    const savedHabits = localStorage.getItem("habits");
+    let initialHabits: Habit[];
+
+    if (savedHabits) {
+      try {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+        initialHabits = JSON.parse(savedHabits);
+      } catch (e) {
+        // Fallback to default habits if JSON parsing fails
+        initialHabits = [
+          { id: "1", name: "Meditate", daysCompleted: 14 },
+          { id: "2", name: "Read a book", daysCompleted: 9 },
+          { id: "3", name: "Exercise", daysCompleted: 6 },
+        ];
+      }
+    } else {
+      // Use default habits if nothing is in localStorage
+      initialHabits = [
+        { id: "1", name: "Meditate", daysCompleted: 14 },
+        { id: "2", name: "Read a book", daysCompleted: 9 },
+        { id: "3", name: "Exercise", daysCompleted: 6 },
+      ];
+    }
+
     setHabits(initialHabits);
 
     const savedThemeIndex = localStorage.getItem("habitThemeIndex");
@@ -75,6 +94,13 @@ export default function HomePage() {
       }),
     );
   }, []);
+
+  // Save habits to localStorage whenever they change
+  useEffect(() => {
+    if (habits.length > 0) {
+      localStorage.setItem("habits", JSON.stringify(habits));
+    }
+  }, [habits]);
 
   // Typewriter effect
   useEffect(() => {
