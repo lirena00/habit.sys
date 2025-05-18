@@ -13,7 +13,7 @@ import { WelcomeText } from "@/components/WelcomeText";
 interface Habit {
   id: string;
   name: string;
-  progress: number;
+  daysCompleted: number;
 }
 
 const themeColors = [
@@ -52,9 +52,9 @@ export default function HomePage() {
   // Initialization (only once)
   useEffect(() => {
     const initialHabits = [
-      { id: "1", name: "Meditate", progress: 70 },
-      { id: "2", name: "Read a book", progress: 45 },
-      { id: "3", name: "Exercise", progress: 30 },
+      { id: "1", name: "Meditate", daysCompleted: 14 },
+      { id: "2", name: "Read a book", daysCompleted: 9 },
+      { id: "3", name: "Exercise", daysCompleted: 6 },
     ];
     setHabits(initialHabits);
 
@@ -147,21 +147,29 @@ export default function HomePage() {
     }
   }, [command]);
 
+  // Update calculate overall progress function
   const calculateOverallProgress = (habitsList: Habit[]) => {
     if (habitsList.length === 0) {
       setOverallProgress(0);
       return;
     }
-    const total = habitsList.reduce((sum, habit) => sum + habit.progress, 0);
-    setOverallProgress(Math.round(total / habitsList.length));
+
+    // Calculate as a percentage of total possible days (21 * number of habits)
+    const totalDays = habitsList.reduce(
+      (sum, habit) => sum + habit.daysCompleted,
+      0,
+    );
+    const maxPossibleDays = habitsList.length * 21;
+    setOverallProgress(Math.round((totalDays / maxPossibleDays) * 100));
   };
 
+  // Update add habit function to use daysCompleted
   const addHabit = (habitName: string = newHabit) => {
     if (habitName.trim() === "") return;
     const habit: Habit = {
       id: Date.now().toString(),
       name: habitName,
-      progress: 0,
+      daysCompleted: 0,
     };
     const updatedHabits = [...habits, habit];
     setHabits(updatedHabits);
@@ -169,13 +177,14 @@ export default function HomePage() {
     setNewHabit("");
   };
 
+  // Update progress function to increment/decrement days instead of percentage
   const updateProgress = (id: string, increment: boolean) => {
     const updatedHabits = habits.map((habit) => {
       if (habit.id === id) {
-        const newProgress = increment
-          ? Math.min(habit.progress + 10, 100)
-          : Math.max(habit.progress - 10, 0);
-        return { ...habit, progress: newProgress };
+        const newDaysCompleted = increment
+          ? Math.min(habit.daysCompleted + 1, 21)
+          : Math.max(habit.daysCompleted - 1, 0);
+        return { ...habit, daysCompleted: newDaysCompleted };
       }
       return habit;
     });
@@ -183,13 +192,14 @@ export default function HomePage() {
     calculateOverallProgress(updatedHabits);
   };
 
-  const setHabitProgress = (habitName: string, progressValue: number) => {
+  // Update setHabitProgress for command handling
+  const setHabitProgress = (habitName: string, daysValue: number) => {
     const habitNameLower = habitName.toLowerCase();
     const updatedHabits = habits.map((habit) => {
       if (habit.name.toLowerCase() === habitNameLower) {
         return {
           ...habit,
-          progress: Math.max(0, Math.min(100, progressValue)),
+          daysCompleted: Math.max(0, Math.min(21, daysValue)),
         };
       }
       return habit;
@@ -238,10 +248,10 @@ export default function HomePage() {
       (commandType === "/progress" || commandType === "/p") &&
       parts.length > 2
     ) {
-      const progressValue = parseInt(parts[parts.length - 1] ?? "0", 10);
-      if (isNaN(progressValue)) return false;
+      const daysValue = parseInt(parts[parts.length - 1] ?? "0", 10);
+      if (isNaN(daysValue)) return false;
       const habitName = parts.slice(1, parts.length - 1).join(" ");
-      return setHabitProgress(habitName, progressValue);
+      return setHabitProgress(habitName, daysValue);
     }
     if (commandType === "/export") {
       const dataStr =
@@ -264,11 +274,17 @@ export default function HomePage() {
       return true;
     }
     if (commandType === "/stats") {
-      const completed = habits.filter((h) => h.progress === 100).length;
-      const avgProgress = overallProgress;
+      const completed = habits.filter((h) => h.daysCompleted === 21).length;
+      const avgDays =
+        habits.length > 0
+          ? Math.round(
+              habits.reduce((sum, h) => sum + h.daysCompleted, 0) /
+                habits.length,
+            )
+          : 0;
       setCommandHistory((prev) => [
         ...prev.slice(-4),
-        `Stats: ${habits.length} habits, ${completed} completed, ${avgProgress}% average progress`,
+        `Stats: ${habits.length} habits, ${completed} completed, avg ${avgDays}/21 days per habit`,
       ]);
       return true;
     }
@@ -301,6 +317,7 @@ export default function HomePage() {
           habits={habits}
           updateProgress={updateProgress}
           deleteHabit={deleteHabit}
+          overallProgress={overallProgress}
         />
         <AddHabitInput
           newHabit={newHabit}
